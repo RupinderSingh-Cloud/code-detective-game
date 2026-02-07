@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Detective - Learn Coding Through Story</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Lucide React icons as inline SVG components
+        const CheckCircle = () => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        );
+
+        const XCircle = () => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+        );
+
+        const Code = ({ className, ...props }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+        );
+
+        const Terminal = ({ className, ...props }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+        );
+
+        const Zap = ({ className, ...props }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+        );
+
+        const CodeDetectiveGame = () => {
+            const [currentLevel, setCurrentLevel] = useState(0);
+            const [userCode, setUserCode] = useState('');
+            const [feedback, setFeedback] = useState('');
+            const [completedLevels, setCompletedLevels] = useState([]);
+            const [showHint, setShowHint] = useState(false);
+
+            const levels = [
+                {
+                    title: "The Missing Data",
+                    story: "You're a cyber detective in Neo Tokyo, 2089. A mysterious data fragment has been discovered, but it's incomplete. Your first task: store the suspect's ID number in a variable so you can track them through the city's network.",
+                    concept: "Variables & Data Types",
+                    task: "Create a variable called 'suspectId' and assign it the value 4782",
+                    hint: "In JavaScript, use 'let' or 'const' to declare a variable, followed by = to assign a value",
+                    solution: (code) => {
+                        const normalized = code.replace(/\s+/g, '');
+                        return (normalized.includes('letsuspectId=4782') || 
+                                normalized.includes('constsuspectId=4782') ||
+                                normalized.includes('varsuspectId=4782'));
+                    },
+                    example: "let suspectId = 4782;"
+                },
+                {
+                    title: "The Pattern Recognition",
+                    story: "The suspect has left a trail of network signatures. You need to check each one sequentially. Your scanner can only process them in order - if you skip even one, the trail goes cold.",
+                    concept: "Basic Logic & Sequences",
+                    task: "Write three console.log statements in sequence to print: 'Scanning signature 1', 'Scanning signature 2', 'Scanning signature 3'",
+                    hint: "Each console.log() should be on its own line, and they'll execute from top to bottom",
+                    solution: (code) => {
+                        const lines = code.toLowerCase().split('\n').filter(l => l.trim());
+                        return lines.length >= 3 && 
+                               lines[0].includes('console.log') && lines[0].includes('signature 1') &&
+                               lines[1].includes('console.log') && lines[1].includes('signature 2') &&
+                               lines[2].includes('console.log') && lines[2].includes('signature 3');
+                    },
+                    example: "console.log('Scanning signature 1');\nconsole.log('Scanning signature 2');\nconsole.log('Scanning signature 3');"
+                },
+                {
+                    title: "The Data Decoder",
+                    story: "You've intercepted an encrypted message, but it's been scrambled. The encryption key is hidden in a calculation. You need to write a function that takes two numbers and returns their sum - this will reveal the decryption key.",
+                    concept: "Functions & Problem-Solving",
+                    task: "Create a function called 'decrypt' that takes two parameters (a, b) and returns their sum",
+                    hint: "Use the function keyword, give it a name, define parameters in (), and use return to send back a value",
+                    solution: (code) => {
+                        const normalized = code.replace(/\s+/g, '').toLowerCase();
+                        return (normalized.includes('functiondecrypt(') || normalized.includes('constdecrypt=') || normalized.includes('letdecrypt=')) &&
+                               normalized.includes('return') && 
+                               (normalized.includes('a+b') || normalized.includes('b+a'));
+                    },
+                    example: "function decrypt(a, b) {\n  return a + b;\n}"
+                },
+                {
+                    title: "The Identity Verification",
+                    story: "You've cornered the suspect, but you need to verify their identity against the database. Write a function that checks if a given ID matches the suspect's ID (4782). The city's security system needs a true/false response.",
+                    concept: "Functions & Logic",
+                    task: "Create a function 'verifySuspect' that takes an id parameter and returns true if it equals 4782, false otherwise",
+                    hint: "Use === to compare values, and return the result of the comparison",
+                    solution: (code) => {
+                        const normalized = code.replace(/\s+/g, '').toLowerCase();
+                        return (normalized.includes('functionverifysuspect(') || normalized.includes('constverifysuspect=')) &&
+                               normalized.includes('return') &&
+                               (normalized.includes('id===4782') || normalized.includes('4782===id') || 
+                                (normalized.includes('if') && normalized.includes('4782')));
+                    },
+                    example: "function verifySuspect(id) {\n  return id === 4782;\n}"
+                },
+                {
+                    title: "The Final Pursuit",
+                    story: "The suspect is fleeing through the network! You need to process each node they pass through. Create a function that takes a node name and logs 'Tracking: [node name]' - this will activate your pursuit protocol.",
+                    concept: "Functions & String Manipulation",
+                    task: "Create a function 'trackNode' that takes a nodeName parameter and logs 'Tracking: ' followed by the node name",
+                    hint: "You can combine strings with the + operator inside console.log()",
+                    solution: (code) => {
+                        const normalized = code.replace(/\s+/g, '').toLowerCase();
+                        return (normalized.includes('functiontracknode(') || normalized.includes('consttracknode=')) &&
+                               normalized.includes('console.log') &&
+                               (normalized.includes('tracking:') || normalized.includes('tracking'));
+                    },
+                    example: "function trackNode(nodeName) {\n  console.log('Tracking: ' + nodeName);\n}"
+                }
+            ];
+
+            const currentLevelData = levels[currentLevel];
+
+            const checkSolution = () => {
+                if (!userCode.trim()) {
+                    setFeedback('Please write some code first!');
+                    return;
+                }
+
+                if (currentLevelData.solution(userCode)) {
+                    setFeedback('✓ Success! The code works perfectly. Case advancing...');
+                    if (!completedLevels.includes(currentLevel)) {
+                        setCompletedLevels([...completedLevels, currentLevel]);
+                    }
+                    setTimeout(() => {
+                        if (currentLevel < levels.length - 1) {
+                            setCurrentLevel(currentLevel + 1);
+                            setUserCode('');
+                            setFeedback('');
+                            setShowHint(false);
+                        } else {
+                            setFeedback('🎉 CASE CLOSED! You\'ve mastered the fundamentals and caught the suspect! You\'re now a certified cyber detective.');
+                        }
+                    }, 2000);
+                } else {
+                    setFeedback('✗ Not quite right. The system rejected your code. Try again or check the hint!');
+                }
+            };
+
+            const skipLevel = () => {
+                if (currentLevel < levels.length - 1) {
+                    setCurrentLevel(currentLevel + 1);
+                    setUserCode('');
+                    setFeedback('');
+                    setShowHint(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+                    {/* RS Logo - Top Left */}
+                    <div className="fixed top-6 left-6 z-50">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg border-2 border-cyan-400/50">
+                            <span className="text-white font-bold text-2xl">RS</span>
+                        </div>
+                    </div>
+
+                    <div className="max-w-4xl mx-auto">
+                        {/* Header */}
+                        <div className="text-center mb-8">
+                            <div className="flex items-center justify-center gap-3 mb-4">
+                                <Terminal className="w-10 h-10 text-cyan-400" />
+                                <h1 className="text-4xl font-bold text-cyan-400">Code Detective</h1>
+                            </div>
+                            <p className="text-purple-200 text-lg">Neo Tokyo Cyber Crimes Division</p>
+                            <div className="mt-4 flex justify-center gap-2">
+                                {levels.map((_, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`w-8 h-2 rounded ${
+                                            completedLevels.includes(idx)
+                                                ? 'bg-green-400'
+                                                : idx === currentLevel
+                                                ? 'bg-cyan-400'
+                                                : 'bg-slate-600'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Main Game Card */}
+                        <div className="bg-slate-800 rounded-lg shadow-2xl border border-purple-500/30 overflow-hidden">
+                            {/* Level Header */}
+                            <div className="bg-gradient-to-r from-purple-600 to-cyan-600 p-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Code className="w-6 h-6 text-white" />
+                                    <span className="text-sm font-semibold text-purple-200">
+                                        Level {currentLevel + 1} of {levels.length}
+                                    </span>
+                                </div>
+                                <h2 className="text-2xl font-bold text-white mb-2">
+                                    {currentLevelData.title}
+                                </h2>
+                                <div className="inline-block bg-black/30 px-3 py-1 rounded-full">
+                                    <span className="text-sm text-cyan-300 flex items-center gap-2">
+                                        <Zap className="w-4 h-4" />
+                                        {currentLevelData.concept}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Story Section */}
+                            <div className="p-6 bg-slate-700/50">
+                                <p className="text-purple-100 text-lg leading-relaxed italic">
+                                    "{currentLevelData.story}"
+                                </p>
+                            </div>
+
+                            {/* Task Section */}
+                            <div className="p-6 border-t border-slate-600">
+                                <h3 className="text-cyan-400 font-semibold mb-2">Your Mission:</h3>
+                                <p className="text-white bg-slate-900/50 p-4 rounded border-l-4 border-cyan-500">
+                                    {currentLevelData.task}
+                                </p>
+                            </div>
+
+                            {/* Code Editor */}
+                            <div className="p-6 border-t border-slate-600">
+                                <label className="block text-cyan-400 font-semibold mb-3">
+                                    Code Terminal:
+                                </label>
+                                <textarea
+                                    value={userCode}
+                                    onChange={(e) => setUserCode(e.target.value)}
+                                    className="w-full h-40 bg-slate-900 text-green-400 font-mono p-4 rounded border border-slate-600 focus:border-cyan-500 focus:outline-none resize-none"
+                                    placeholder="// Write your code here..."
+                                    spellCheck="false"
+                                />
+                            </div>
+
+                            {/* Hint Section */}
+                            {showHint && (
+                                <div className="p-6 bg-amber-900/20 border-t border-amber-500/30">
+                                    <p className="text-amber-200">
+                                        <strong>Hint:</strong> {currentLevelData.hint}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Feedback */}
+                            {feedback && (
+                                <div className={`p-4 mx-6 mb-6 rounded ${
+                                    feedback.includes('✓') || feedback.includes('🎉')
+                                        ? 'bg-green-900/30 border border-green-500 text-green-200'
+                                        : 'bg-red-900/30 border border-red-500 text-red-200'
+                                }`}>
+                                    {feedback}
+                                </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="p-6 bg-slate-700/30 border-t border-slate-600 flex gap-3">
+                                <button
+                                    onClick={checkSolution}
+                                    className="flex-1 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+                                >
+                                    Run Code
+                                </button>
+                                <button
+                                    onClick={() => setShowHint(!showHint)}
+                                    className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+                                >
+                                    {showHint ? 'Hide Hint' : 'Show Hint'}
+                                </button>
+                                <button
+                                    onClick={skipLevel}
+                                    className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+                                >
+                                    Skip →
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Info Footer */}
+                        <div className="mt-6 text-center text-purple-300 text-sm">
+                            <p>Practice JavaScript fundamentals through interactive storytelling</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<CodeDetectiveGame />);
+    </script>
+</body>
+</html>
